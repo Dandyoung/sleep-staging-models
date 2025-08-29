@@ -214,9 +214,9 @@ def run_model_ppg_only(model, device, ppg_continuous: np.ndarray):
     with torch.no_grad():
         out = model(x) # (1,4,1200)
 
-        # 이중 softmax 확인
-        soft = out.softmax(dim=1)
-        print(f"[smx] rawΣ={out.sum(1).mean():.3f}  raw[min,max]=[{out.min():.3f},{out.max():.3f}]  smxΣ={soft.sum(1).mean():.3f}")
+        # # 이중 softmax 확인
+        # soft = out.softmax(dim=1)
+        # print(f"[smx] rawΣ={out.sum(1).mean():.3f}  raw[min,max]=[{out.min():.3f},{out.max():.3f}]  smxΣ={soft.sum(1).mean():.3f}")
 
         if out.dim() != 3 or out.size(1) != NUM_CLASSES:
             raise RuntimeError(f"Unexpected model output shape: {tuple(out.shape)}")

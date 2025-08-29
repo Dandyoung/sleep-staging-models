@@ -2,9 +2,11 @@
 
 > **참고**: 이 프로젝트는 [DavyWJW/sleep-staging-models](https://github.com/DavyWJW/sleep-staging-models/tree/main?tab=readme-ov-file) GitHub 레포지토리를 기반으로 합니다.
 
-## 🚀 빠른 시작
+## 빠른 시작
 
 ### 1. 환경 설정
+
+> **⚠️ Python 버전**: Python 3.10.12 사용
 
 ```bash
 # 저장소 클론
@@ -157,7 +159,7 @@ pkill -f train_ppg_only.py
 pkill -f tensorboard
 ```
 
-## 🏗️ 프로젝트 구조
+## 프로젝트 구조
 
 ```
 sleep-staging-models/
@@ -175,12 +177,17 @@ sleep-staging-models/
 │       ├── edfs/                  # EDF 신호 파일들 (347GB)
 │       └── annotations-events-nsrr/ # XML 어노테이션 파일들 (444MB)
 ├── 📁 mesa-x/                     # 전처리된 MESA 데이터 (32GB)
-│   ├── mesa_ppg_with_labels.h5    # PPG 데이터 + 라벨 (15GB)
-│   ├── mesa_real_ecg.h5           # 실제 ECG 데이터 (16GB)
-│   ├── mesa_subject_index.h5      # 피실험자 인덱스 정보 (20MB)
+│   ├── logs/                      # 전처리 로그
 │   ├── data_stats.npy             # 데이터 통계 (numpy)
 │   ├── data_stats.txt             # 데이터 통계 (텍스트)
-│   └── logs/                      # 전처리 로그
+│   ├── mesa_ppg_with_labels.h5    # PPG 데이터 + 라벨 (15GB)
+│   ├── mesa_real_ecg.h5           # 실제 ECG 데이터 (16GB)
+│   └── mesa_subject_index.h5      # 피실험자 인덱스 정보 (20MB)
+├── 📁 mesa-inference/             # 추론 시 EDF 파일 전처리 캐시 (피실험자별)
+│   └── 0010/                     # 피실험자 ID별 폴더
+│       ├── meta.json             # 전처리 메타데이터 (EDF 파일 경로, 샘플링 정보 등)
+│       ├── ppg_continuous.npy    # 전처리된 PPG 연속 신호 (9.4MB)
+│       └── ppg_windows.npy       # 전처리된 PPG 윈도우 데이터 (9.4MB)
 ├── 📁 tmp/                        # 테스트 파일들
 ├── 📄 multimodal_sleep_model.py   # 주요 모델 아키텍처
 ├── 📄 train_ppg_only.py           # PPG 전용 모델 training
@@ -194,13 +201,12 @@ sleep-staging-models/
 └── 📄 README.md                   # 프로젝트 설명서
 ```
 
-## 📊 주요 파일 설명
+## 주요 파일 설명
 
 ### 핵심 모델 파일
-- **`multimodal_sleep_model.py`**: 주요 모델 아키텍처 (SleepPPGNet, MultiModalSleepNet)
-- **`train_ppg_only.py`**: PPG 전용 모델 training 스크립트
-- **`inference_ppg_only.py`**: PPG 전용 모델 inference 스크립트
-- **`extract_mesa_data.py`**: MESA 데이터 추출 및 전처리
+- **`multimodal_sleep_model.py`**: 주요 모델 아키텍처 (SleepPPGNet 외의 다른 모델 포함)
+- **`train_ppg_only.py`**: SleepPPGNet 전용 training 스크립트
+- **`inference_ppg_only.py`**: SleepPPGNet 전용 모델 inference 스크립트
 
 ### 데이터 처리
 - **`multimodal_dataset_aligned.py`**: 데이터셋 로더 및 배치 생성
@@ -212,7 +218,7 @@ sleep-staging-models/
 - **`verify_mesa_outputs.py`**: 전처리 결과 및 window 길이 확인
 - **`extract_mesa_data.py`**: SleepPPG-Net 학습용 데이터 전처리
 
-## 📈 데이터셋 크기 정보
+## 데이터셋 크기 정보
 
 | 항목 | 크기 | 설명 |
 |------|------|------|
@@ -224,54 +230,38 @@ sleep-staging-models/
 ### 데이터셋 상세 정보
 - **총 피실험자 수**: 1,900명
 - **EDF/XML 매칭**: 1,900개 (100% 매칭)
-- **전처리 후 파일**:
-  - `mesa_ppg_with_labels.h5`: 15GB (PPG 신호 + 라벨)
-  - `mesa_real_ecg.h5`: 16GB (ECG 신호)
-  - `mesa_subject_index.h5`: 20MB (피실험자 인덱스)
+- **전처리 후 파일** (총 5개):
+  - `logs/` - 전처리 로그
+  - `data_stats.npy` - 데이터 통계 (numpy)
+  - `data_stats.txt` - 데이터 통계 (텍스트)
+  - `mesa_ppg_with_labels.h5` - PPG 신호 + 라벨 (15GB)
+  - `mesa_real_ecg.h5` - ECG 신호 (16GB)
+  - `mesa_subject_index.h5` - 피실험자 인덱스 (20MB)
+
+### 예상 소요 시간 (네트워크 속도에 따라 다를 수 있음)
+- **데이터셋 다운로드**: `약 17시간`
+- **데이터 전처리**: `약 1시간 8분`
+
 
 ## ⚙️ 설정 파일
 
 ### `configs/config_cloud.yaml`
-- 데이터 경로 및 배치 크기 설정
+- 데이터 경로 및 배치 크기 설정`
 - training 파라미터 (에포크, 학습률, 조기 종료)
 - 모델 활성화 옵션
 - GPU 및 출력 설정
-
-## 📦 의존성 패키지
-
-### 핵심 프레임워크
-- **PyTorch 2.5.1+ (CUDA 12.1)**: 딥러닝 프레임워크 (H100/A100 지원)
-- **NumPy 1.24.3**: 수치 계산
-- **scikit-learn 1.3.0**: 머신러닝 유틸리티
-
-> **GPU 호환성**: H100(sm_90) 및 A100 GPU 사용 시 CUDA 12.1 버전 PyTorch 필수
-
-### 신호 처리
-- **neurokit2 0.2.5**: 생체신호 처리
-- **biosppy 2.1.1**: 생체신호 분석
-- **pyedflib 0.1.34**: EDF 파일 처리
-- **wfdb 4.1.2**: PhysioNet 데이터베이스
-
-### 시각화 및 모니터링
-- **matplotlib 3.7.2**: 그래프 생성
-- **tensorboard 2.13.0**: training 모니터링
-- **wandb 0.15.8**: 실험 추적
+- 설정 변수별 상세 내용은 `config_cloud.yaml`주석 확인
 
 ## ⚠️ 주의사항
 
 ### 실행 환경 요구사항
 - **GPU**: H100(sm_90) 또는 A100 GPU 권장
-- **CUDA**: 12.1 이상 (sm_90 커널 지원)
+- **CUDA**: 12.1 이상 (H100 sm_90 커널 및 A100 지원)
 - **메모리**: 최소 32GB GPU 메모리
 - **저장공간**: 
   - MESA 데이터셋 다운로드 시 약 348GB 필요
   - 전처리 후 데이터셋: 32GB
   - 모델 체크포인트: 42MB
-
-### 문제 해결
-- **CUDA 에러**: `no kernel image is available for execution on device` 발생 시 CUDA 12.1 버전 PyTorch 재설치
-- **메모리 부족**: 배치 크기 조정 또는 GPU 메모리 확인
-- **저장공간 부족**: 전처리 후 원본 데이터 삭제 고려 (32GB vs 348GB)
 
 ---
 

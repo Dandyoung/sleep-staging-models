@@ -206,12 +206,12 @@ class MultiModalTrainer:
 
             optimizer.zero_grad()
 
-            # 이중 softmax 확인
-            if batch_idx == 0:
-                soft = outputs.softmax(1)
-                print(f"[smx/train] rawΣ={outputs.sum(1).mean().item():.3f} "
-                    f"raw[min,max]=[{outputs.min().item():.3f},{outputs.max().item():.3f}] "
-                    f"smxΣ={soft.sum(1).mean().item():.3f}")
+            # # 이중 softmax 확인
+            # if batch_idx == 0:
+            #     soft = outputs.softmax(1)
+            #     print(f"[smx/train] rawΣ={outputs.sum(1).mean().item():.3f} "
+            #         f"raw[min,max]=[{outputs.min().item():.3f},{outputs.max().item():.3f}] "
+            #         f"smxΣ={soft.sum(1).mean().item():.3f}")
 
             # (B, 4, 1200) → (B, 1200, 4)
             outputs = outputs.permute(0, 2, 1)
@@ -255,12 +255,12 @@ class MultiModalTrainer:
                     ppg, ecg, labels = ppg.to(device), ecg.to(device), labels.to(device)
                     outputs = model(ppg, ecg)
 
-                # 이중 softmax 확인
-                if batch_idx == 0:
-                    soft = outputs.softmax(1)
-                    print(f"[smx/train] rawΣ={outputs.sum(1).mean().item():.3f} "
-                        f"raw[min,max]=[{outputs.min().item():.3f},{outputs.max().item():.3f}] "
-                        f"smxΣ={soft.sum(1).mean().item():.3f}")
+                # # 이중 softmax 확인
+                # if batch_idx == 0:
+                #     soft = outputs.softmax(1)
+                #     print(f"[smx/train] rawΣ={outputs.sum(1).mean().item():.3f} "
+                #         f"raw[min,max]=[{outputs.min().item():.3f},{outputs.max().item():.3f}] "
+                #         f"smxΣ={soft.sum(1).mean().item():.3f}")
 
                 outputs = outputs.permute(0, 2, 1)  # (B, 1200, 4)
                 loss = criterion(
