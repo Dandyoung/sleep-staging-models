@@ -218,7 +218,7 @@ sleep-staging-models/
 - **`verify_mesa_outputs.py`**: 전처리 결과 및 window 길이 확인
 - **`extract_mesa_data.py`**: SleepPPG-Net 학습용 데이터 전처리
 
-## 데이터셋 크기 정보
+## 데이터셋 정보
 
 | 항목 | 크기 | 설명 |
 |------|------|------|
@@ -246,8 +246,8 @@ sleep-staging-models/
 ## ⚙️ 설정 파일
 
 ### `configs/config_cloud.yaml`
-- 데이터 경로 및 배치 크기 설정`
-- training 파라미터 (에포크, 학습률, 조기 종료)
+- 각 폴더 path 및 batch size 설정
+- training 파라미터 (epoch, learning rate, early stopping 용 patience 등)
 - 모델 활성화 옵션
 - GPU 및 출력 설정
 - 설정 변수별 상세 내용은 `config_cloud.yaml`주석 확인
@@ -265,7 +265,7 @@ sleep-staging-models/
 
 ---
 
-## 👨‍💻 작성자
+## 작성자
 
 **SmartM2M AI팀** - 이영우
 
