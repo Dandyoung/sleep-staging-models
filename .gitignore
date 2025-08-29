@@ -1,0 +1,27 @@
+# Python 캐시
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 가상환경
+venv/
+
+# 데이터 디렉토리 (대용량, 업로드 불필요)
+dataset/
+mesa/
+mesa-x/
+mesa-commercial-use/
+mesa-inference/
+
+# 로그/출력 디렉토리 (필요 시 추가)
+logs/
+outputs/
+
+# 특정 파일 확장자 무시
+*.edf
+*.xml
+*.csv
+
+# 기타
+.DS_Store

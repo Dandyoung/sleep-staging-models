@@ -1,0 +1,46 @@
+{
+  "summary": {
+    "xml_dir": "/workspace/NSRR/sleep-staging-models/mesa/polysomnography/annotations-events-nsrr",
+    "edf_dir": "/workspace/NSRR/sleep-staging-models/mesa/polysomnography/edfs",
+    "xml_count": 5,
+    "edf_count": 5,
+    "matched": 5,
+    "only_xml": 0,
+    "only_edf": 0,
+    "xml_duplicates": {},
+    "edf_duplicates": {}
+  },
+  "matched": [
+    {
+      "id": "0001",
+      "xml": "mesa-sleep-0001-nsrr.xml",
+      "edf": "mesa-sleep-0001.edf"
+    },
+    {
+      "id": "0002",
+      "xml": "mesa-sleep-0002-nsrr.xml",
+      "edf": "mesa-sleep-0002.edf"
+    },
+    {
+      "id": "0006",
+      "xml": "mesa-sleep-0006-nsrr.xml",
+      "edf": "mesa-sleep-0006.edf"
+    },
+    {
+      "id": "0010",
+      "xml": "mesa-sleep-0010-nsrr.xml",
+      "edf": "mesa-sleep-0010.edf"
+    },
+    {
+      "id": "0012",
+      "xml": "mesa-sleep-0012-nsrr.xml",
+      "edf": "mesa-sleep-0012.edf"
+    }
+  ],
+  "only_xml": [],
+  "only_edf": [],
+  "duplicates": {
+    "xml": {},
+    "edf": {}
+  }
+}

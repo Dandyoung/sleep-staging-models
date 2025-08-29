@@ -1,0 +1,86 @@
+# ppg-only
+
+# 1. 데이터 관련 설정
+data:
+  # PPG 시계열 데이터 (라벨 포함 h5)
+  ppg_file: ./mesa-x/mesa_ppg_with_labels.h5
+  # 실제 ECG 데이터 (멀티모달 학습 시 사용)
+  ecg_file: ./mesa-x/mesa_real_ecg.h5
+  # subject index 정보 (train/val/test split용)
+  index_file: ./mesa-x/mesa_subject_index.h5
+
+  # 배치 크기
+  batch_size: 8
+  # 데이터 로딩 시 worker process 수
+  num_workers: 4
+
+# 2. train 관련 설정
+training:
+  num_epochs: 50
+  learning_rate: 0.00025
+  # weight decay (L2 정규화)
+  weight_decay: 0.00001
+  # early stopping 기준
+  patience: 10
+
+  # test set을 SleepPPG-Net 논문에서 사용한 고정 subject로 할지 여부
+  use_sleepppg_test_set: true
+
+  # 같은 config 설정으로 training 반복(5면 5번 반복)
+  num_runs: 1
+
+# 3. 모델 관련 설정
+model:
+  # PPG only 모델 활성화 여부
+  ppg_only:
+    enabled: true
+  # Real ECG 멀티모달 모델 활성화 여부
+  real_ecg:
+    enabled: true
+    # 멀티모달에서 PPG-ECG 융합 방법
+    fusion_strategy: "attention"
+  # 생성 ECG 기반 모델 (현재는 사용 안 함)
+  generated_ecg:
+    enabled: false
+
+# 4. 출력 관련 설정
+output:
+  # 결과 저장 루트 디렉토리
+  save_dir: "./outputs"
+  # 몇 epoch마다 체크포인트 저장할지
+  save_frequency: 5
+  # 중간 결과(fusion matrix 등) 저장 여부
+  save_intermediate: true
+
+# 5. GPU 관련 설정
+gpu:
+  device_id: 0
+  # AMP(Automatic Mixed Precision) 사용 여부 (false면 full precision)
+  mixed_precision: false
+
+# 6. inference 관련 설정
+inference:
+  only_inference: true         # false = H5(라벨 有) 모드 / true = RAW EDF 모드
+
+  # 공통
+  random_seed: 42
+  save_dir: "./outputs/inference"
+  best_model: ./models/best_model.pth
+  cache_root: "./mesa-inference"  # 기본값(생략 가능)
+  save_csv: true
+  save_graph: true
+  save_json: true
+
+  # RAW EDF 모드일 때만 사용
+  edf_file: ./mesa-commercial-use/polysomnography/edfs/mesa-sleep-0010.edf
+
+  # 분석 모드 전용
+  n_subjects: 3   # 교집합에서 몇 명 추론할지 (기본 1, 0/음수면 에러)
+
+  # 공통
+  random_seed: 42
+  save_dir: "./outputs/inference"
+  best_model: ./models/best_model.pth
+  save_csv: true
+  save_graph: true
+  save_json: true
