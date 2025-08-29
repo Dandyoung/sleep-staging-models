@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """
+사용 방법 : 
+python inference_ppg_only.py --config configs/config_cloud.yaml
+
 PPG-only inference script (with cache reuse)
 - 최소 inference 블록(only_inference / edf_file / random_seed) 지원
 - H5(라벨 有) 분석 모드: 테스트셋 교집합에서 n_subjects명 샘플링
