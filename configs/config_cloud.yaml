@@ -60,12 +60,12 @@ gpu:
 
 # 6. inference 관련 설정
 inference:
-  only_inference: true         # false = H5(라벨 有) 모드 / true = RAW EDF 모드
+  only_inference: flase         # false = 분석(라벨 有) 모드 / true = RAW EDF 모드
 
   # 공통
   random_seed: 42
   save_dir: "./outputs/inference"
-  best_model: ./models/best_model.pth
+  best_model: ./models/best_model_20250829.pth
   cache_root: "./mesa-inference"  # 기본값(생략 가능)
   save_csv: true
   save_graph: true
@@ -76,11 +76,3 @@ inference:
 
   # 분석 모드 전용
   n_subjects: 3   # 교집합에서 몇 명 추론할지 (기본 1, 0/음수면 에러)
-
-  # 공통
-  random_seed: 42
-  save_dir: "./outputs/inference"
-  best_model: ./models/best_model.pth
-  save_csv: true
-  save_graph: true
-  save_json: true

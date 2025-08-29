@@ -4,12 +4,6 @@
 
 ## 🚀 빠른 시작
 
-## 해야할일
-### 1. 모델 학습
-### 2. 추론 파이프라인 구현
-### 3. 전부 구현 됬으면 해당 내용 가지고 README.md 재작성
-### 4. 저장공간: MESA 데이터셋 다운로드 시 약 50GB 필요 <<이거 정확하게 수정
-
 ### 1. 환경 설정
 
 ```bash
@@ -21,11 +15,7 @@ cd sleep-staging-models
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 
-# 의존성 설치 (CUDA 12.1 지원 버전)
-pip install torch torchvision torchaudio \
-  --index-url https://download.pytorch.org/whl/cu121
-
-# 기타 의존성 설치
+# 의존성 설치
 pip install -r requirements.txt
 ```
 
@@ -34,9 +24,8 @@ pip install -r requirements.txt
 - `cu121`: CUDA 12.1 버전을 의미
 
 > **⚠️ 중요**: H100/A100 GPU 사용 시 CUDA 12.1 버전 PyTorch 설치 필요
-> - 기존 requirements.txt의 PyTorch는 CUDA 11.x 계열로 sm_90 커널 미포함
+> - 기존 `DavyWJW/sleep-staging-models`에서 제공하는 requirements.txt의 PyTorch는 CUDA 11.x 계열로 sm_90 커널 미포함
 > - H100에서 `no kernel image is available for execution on device` 에러 방지
-> - 기존 requirements.txt는 `misc/` 폴더로 이동됨
 
 ### 2. 데이터 준비
 
@@ -48,7 +37,7 @@ pip install -r requirements.txt
 # 터미널 1: EDF 파일 다운로드
 nsrr download mesa-commercial-use/polysomnography/edfs
 
-# 터미널 2: 어노테이션 파일 다운로드  
+# 터미널 2: 어노테이션 XML 파일 다운로드  
 nsrr download mesa-commercial-use/polysomnography/annotations-events-nsrr
 ```
 
@@ -78,11 +67,11 @@ python verify_mesa_dataset.py \
 ```json
 {
   "summary": {
-    "xml_count": 1899,
-    "edf_count": 1053,
-    "matched": 1052,
-    "only_xml": 847,
-    "only_edf": 1
+    "xml_count": 1900,
+    "edf_count": 1900,
+    "matched": 1900,
+    "only_xml": 0,
+    "only_edf": 0
   }
 }
 ```
@@ -107,9 +96,9 @@ python verify_mesa_outputs.py --base ./mesa-x
 **Argument 설명:**
 - `--base`: 전처리된 MESA 데이터가 저장된 기본 디렉토리 경로
 
-### 3. 모델 훈련
+### 3. 모델 training
 
-#### PPG 전용 모델
+#### SleepPPG-Net 모델로 training 시작
 ```bash
 python train_ppg_only.py --config configs/config_cloud.yaml --model ppg_only
 ```
@@ -117,23 +106,8 @@ python train_ppg_only.py --config configs/config_cloud.yaml --model ppg_only
 **Argument 설명:**
 - `--config`: 설정 파일 경로 (YAML 형식)
 - `--model`: 사용할 모델 타입 (`ppg_only`)
-- `--runs`: 동일한 설정으로 훈련을 반복할 횟수
 
-#### 이중 스트림 모델들 (misc/ 폴더에 위치)
-
-> **⚠️ 주의**: 이중 스트림 모델들은 추가 검증이 필요합니다. 현재는 기본적인 실행 방법만 제공됩니다.
-
-#### 멀티 GPU 훈련 (DDP)
-```bash
-python misc/train_crossattn_gen.py --config misc/config_crossattn_generated.yaml --gpus 1 --runs 5
-```
-
-**Argument 설명:**
-- `--config`: 설정 파일 경로
-- `--gpus`: 사용할 GPU 개수 (현재는 단일 GPU 사용)
-- `--runs`: 동일한 설정으로 훈련을 반복할 횟수
-
-### 4. 모니터링
+### 4. training 모니터링
 
 ```bash
 # TensorBoard 실행
@@ -148,9 +122,19 @@ nohup tensorboard --logdir ./outputs --host 0.0.0.0 --port 8890 &
 - `--host`: 접속할 수 있는 호스트 주소 (0.0.0.0은 모든 인터페이스)
 - `--port`: TensorBoard가 사용할 포트 번호
 
-### 5. 실행 및 관리
+### 5. 모델 inference
 
-#### 5.1 프로세스 관리
+#### PPG 전용 모델 inference
+```bash
+python inference_ppg_only.py --config configs/config_cloud.yaml
+```
+
+**Argument 설명:**
+- `--config`: 설정 파일 경로 (모델 체크포인트, 저장 경로 등이 설정에 포함됨)
+
+### 6. 실행 및 관리
+
+#### 6.1 프로세스 관리
 
 ```bash
 # 실행 중인 프로세스 확인
@@ -162,7 +146,7 @@ pgrep -fl train_ppg_only.py
 pgrep -fl tensorboard
 ```
 
-#### 5.2 프로세스 종료
+#### 6.2 프로세스 종료
 
 ```bash
 # PID로 종료
@@ -182,51 +166,40 @@ sleep-staging-models/
 ├── 📁 dataset/                    # 데이터셋 관련
 │   └── mesa/                     # MESA 데이터셋
 ├── 📁 logs/                       # 로그 파일들
-├── 📁 misc/                       # 추가 모델 및 설정
-│   ├── train_crossattn.py        # 교차 주의 모델 훈련
-│   ├── train_crossattn_gen.py    # 생성 ECG 모델 훈련
-│   ├── train_ppg_unfiltered.py   # 노이즈 추가 PPG 모델 훈련
-│   ├── multimodal_model_crossattn.py # 교차 주의 모델 아키텍처
-│   ├── ppg_unfiltered_crossattn.py # 노이즈 추가 PPG 모델
-│   ├── ppg_with_noise_baseline.py # 노이즈 기반 베이스라인
-│   ├── origin_extract_mesa_data.py # 원본 데이터 추출 스크립트
-│   ├── config_ppg_noise.yaml     # 노이즈 추가 PPG 설정
-│   ├── config_crossattn.yaml     # 교차 주의 모델 설정
-│   ├── config_crossattn_generated.yaml # 생성 ECG 모델 설정
-│   ├── dual.jpg                   # 이중 스트림 아키텍처 이미지
-│   ├── single-ppg.jpg             # 단일 스트림 아키텍처 이미지
-│   └── README.md                  # misc 폴더 설명서
-├── 📁 outputs/                    # 훈련 결과 및 체크포인트
+├── 📁 models/                     # training된 모델 체크포인트
+│   └── best_model_105.pth        # 최고 성능 모델 (42MB)
+├── 📁 outputs/                    # training 결과 및 체크포인트
 ├── 📁 venv/                       # 가상환경
 ├── 📁 mesa-commercial-use/        # MESA 상용 데이터셋
 │   └── polysomnography/
-│       ├── edfs/                  # EDF 신호 파일들
-│       └── annotations-events-nsrr/ # XML 어노테이션 파일들
-├── 📁 mesa-x/                     # 전처리된 MESA 데이터
-│   ├── mesa_ppg_with_labels.h5    # PPG 데이터 + 라벨 (79MB)
-│   ├── mesa_real_ecg.h5           # 실제 ECG 데이터 (86MB)
-│   ├── mesa_subject_index.h5      # 주체 인덱스 정보
+│       ├── edfs/                  # EDF 신호 파일들 (347GB)
+│       └── annotations-events-nsrr/ # XML 어노테이션 파일들 (444MB)
+├── 📁 mesa-x/                     # 전처리된 MESA 데이터 (32GB)
+│   ├── mesa_ppg_with_labels.h5    # PPG 데이터 + 라벨 (15GB)
+│   ├── mesa_real_ecg.h5           # 실제 ECG 데이터 (16GB)
+│   ├── mesa_subject_index.h5      # 피실험자 인덱스 정보 (20MB)
 │   ├── data_stats.npy             # 데이터 통계 (numpy)
 │   ├── data_stats.txt             # 데이터 통계 (텍스트)
 │   └── logs/                      # 전처리 로그
-├── 📁 mesa/                       # 기존 MESA 데이터셋
+├── 📁 tmp/                        # 테스트 파일들
 ├── 📄 multimodal_sleep_model.py   # 주요 모델 아키텍처
-├── 📄 train_ppg_only.py           # PPG 전용 모델 훈련
+├── 📄 train_ppg_only.py           # PPG 전용 모델 training
+├── 📄 inference_ppg_only.py       # PPG 전용 모델 inference
 ├── 📄 extract_mesa_data.py        # MESA 데이터 추출 및 전처리
 ├── 📄 multimodal_dataset_aligned.py # 데이터셋 로더
 ├── 📄 verify_mesa_dataset.py      # 데이터셋 검증 (EDF/XML 매핑)
 ├── 📄 verify_mesa_outputs.py      # 전처리 결과 검증
-├── 📄 paircheck_result.json       # 데이터셋 검증 결과 (173KB)
-├── 📄 데이터 잘 저장됬는지 확인.ipynb # 데이터 저장 확인 노트북
+├── 📄 paircheck_result.json       # 데이터셋 검증 결과 (203KB)
 ├── 📄 requirements.txt            # 의존성 패키지
-└── 📄 README_KR.md               # 한국어 README
+└── 📄 README.md                   # 프로젝트 설명서
 ```
 
 ## 📊 주요 파일 설명
 
 ### 핵심 모델 파일
 - **`multimodal_sleep_model.py`**: 주요 모델 아키텍처 (SleepPPGNet, MultiModalSleepNet)
-- **`train_ppg_only.py`**: PPG 전용 모델 훈련 스크립트
+- **`train_ppg_only.py`**: PPG 전용 모델 training 스크립트
+- **`inference_ppg_only.py`**: PPG 전용 모델 inference 스크립트
 - **`extract_mesa_data.py`**: MESA 데이터 추출 및 전처리
 
 ### 데이터 처리
@@ -239,28 +212,35 @@ sleep-staging-models/
 - **`verify_mesa_outputs.py`**: 전처리 결과 및 window 길이 확인
 - **`extract_mesa_data.py`**: SleepPPG-Net 학습용 데이터 전처리
 
-### 추가 모델들 (misc 폴더)
-- **`train_crossattn.py`**: 교차 주의 모델 훈련
-- **`train_crossattn_gen.py`**: 생성 ECG 기반 모델 훈련
-- **`train_ppg_unfiltered.py`**: 노이즈 추가 PPG 모델 훈련
+## 📈 데이터셋 크기 정보
+
+| 항목 | 크기 | 설명 |
+|------|------|------|
+| **전체 데이터셋** | **348GB** | MESA 데이터셋 전체 크기 |
+| **XML 파일** | **444MB** | 수면 단계 어노테이션 파일들 |
+| **EDF 파일** | **347GB** | 생체신호 데이터 파일들 |
+| **전처리 후 데이터셋** | **32GB** | 모델 학습용으로 가공된 데이터 |
+
+### 데이터셋 상세 정보
+- **총 피실험자 수**: 1,900명
+- **EDF/XML 매칭**: 1,900개 (100% 매칭)
+- **전처리 후 파일**:
+  - `mesa_ppg_with_labels.h5`: 15GB (PPG 신호 + 라벨)
+  - `mesa_real_ecg.h5`: 16GB (ECG 신호)
+  - `mesa_subject_index.h5`: 20MB (피실험자 인덱스)
 
 ## ⚙️ 설정 파일
 
 ### `configs/config_cloud.yaml`
 - 데이터 경로 및 배치 크기 설정
-- 훈련 파라미터 (에포크, 학습률, 조기 종료)
+- training 파라미터 (에포크, 학습률, 조기 종료)
 - 모델 활성화 옵션
 - GPU 및 출력 설정
-
-### `misc/` 폴더의 추가 설정
-- `config_ppg_noise.yaml`: 노이즈 추가 PPG 설정
-- `config_crossattn.yaml`: 교차 주의 모델 설정
-- `config_crossattn_generated.yaml`: 생성 ECG 모델 설정
 
 ## 📦 의존성 패키지
 
 ### 핵심 프레임워크
-- **PyTorch 2.0.1+ (CUDA 12.1)**: 딥러닝 프레임워크 (H100/A100 지원)
+- **PyTorch 2.5.1+ (CUDA 12.1)**: 딥러닝 프레임워크 (H100/A100 지원)
 - **NumPy 1.24.3**: 수치 계산
 - **scikit-learn 1.3.0**: 머신러닝 유틸리티
 
@@ -274,7 +254,7 @@ sleep-staging-models/
 
 ### 시각화 및 모니터링
 - **matplotlib 3.7.2**: 그래프 생성
-- **tensorboard 2.13.0**: 훈련 모니터링
+- **tensorboard 2.13.0**: training 모니터링
 - **wandb 0.15.8**: 실험 추적
 
 ## ⚠️ 주의사항
@@ -283,11 +263,15 @@ sleep-staging-models/
 - **GPU**: H100(sm_90) 또는 A100 GPU 권장
 - **CUDA**: 12.1 이상 (sm_90 커널 지원)
 - **메모리**: 최소 32GB GPU 메모리
-- **저장공간**: MESA 데이터셋 다운로드 시 약 50GB 필요
+- **저장공간**: 
+  - MESA 데이터셋 다운로드 시 약 348GB 필요
+  - 전처리 후 데이터셋: 32GB
+  - 모델 체크포인트: 42MB
 
 ### 문제 해결
 - **CUDA 에러**: `no kernel image is available for execution on device` 발생 시 CUDA 12.1 버전 PyTorch 재설치
 - **메모리 부족**: 배치 크기 조정 또는 GPU 메모리 확인
+- **저장공간 부족**: 전처리 후 원본 데이터 삭제 고려 (32GB vs 348GB)
 
 ---
 
@@ -297,4 +281,4 @@ sleep-staging-models/
 
 이 프로젝트는 PPG 기반 수면 단계 분류 모델의 설치 및 실행 가이드를 제공합니다.
 
-> **구현 내용**: 환경 설정, 데이터 준비, 모델 훈련, 모니터링 등 전체 파이프라인 구현
+> **구현 내용**: 환경 설정, 데이터 준비, 모델 training, 모델 inference, 모니터링 등 전체 파이프라인 구현
