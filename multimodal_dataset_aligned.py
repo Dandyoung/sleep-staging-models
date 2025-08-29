@@ -15,7 +15,7 @@ import os
 
 '''
 'SLEEPPPG_TEST_SUBJECTS' list란
-- SleepPPG-Net 논문에서 공개한 테스트 피험자 ID 집합 (논문과 동일한 test set 재현을 위해 고정 필요)
+- SleepPPG-Net 논문에서 공개한 테스트 피험자 ID 집합으로 총 204개의 피실험자 ID로 구성 (논문과 동일한 test set 재현을 위해 고정 필요)
 - train/val/test를 단순 랜덤 split하면 연구자마다 test set이 달라 성능 비교가 불가능
 - 따라서 train/val은 나머지 subject에서 랜덤 분할하고, test는 반드시 SLEEPPPG_TEST_SUBJECTS와 valid_subjects의 교집합에서만 선택함
 
