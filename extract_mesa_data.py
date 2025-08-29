@@ -523,8 +523,8 @@ class MESADataExtractor:
 
 
 def main():
-    # MESA_PATH = "./mesa-commercial-use" # 원본 MESA 데이터 루트
-    MESA_PATH = "./mesa" # 원본 MESA 데이터 루트
+    MESA_PATH = "./mesa-commercial-use" # 원본 MESA 데이터 루트
+    # MESA_PATH = "./mesa" # 원본 MESA 데이터 루트
     OUTPUT_PATH = "./mesa-x" # 전처리 출력 폴더
 
     extractor = MESADataExtractor(MESA_PATH, OUTPUT_PATH, require_ecg=False)

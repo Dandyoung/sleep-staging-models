@@ -208,9 +208,10 @@ class MultiModalTrainer:
 
             # 이중 softmax 확인
             if batch_idx == 0:
-                raw_sum_mean  = outputs.sum(dim=1).mean().item()
-                soft_sum_mean = outputs.softmax(dim=1).sum(dim=1).mean().item()
-                print(f"[softmax-debug/train] raw_sum_mean={raw_sum_mean:.4f}, softmax_sum_mean={soft_sum_mean:.4f}")
+                soft = outputs.softmax(1)
+                print(f"[smx/train] rawΣ={outputs.sum(1).mean().item():.3f} "
+                    f"raw[min,max]=[{outputs.min().item():.3f},{outputs.max().item():.3f}] "
+                    f"smxΣ={soft.sum(1).mean().item():.3f}")
 
             # (B, 4, 1200) → (B, 1200, 4)
             outputs = outputs.permute(0, 2, 1)
@@ -256,9 +257,10 @@ class MultiModalTrainer:
 
                 # 이중 softmax 확인
                 if batch_idx == 0:
-                    raw_sum_mean  = outputs.sum(dim=1).mean().item()
-                    soft_sum_mean = outputs.softmax(dim=1).sum(dim=1).mean().item()
-                    print(f"[softmax-debug/train] raw_sum_mean={raw_sum_mean:.4f}, softmax_sum_mean={soft_sum_mean:.4f}")
+                    soft = outputs.softmax(1)
+                    print(f"[smx/train] rawΣ={outputs.sum(1).mean().item():.3f} "
+                        f"raw[min,max]=[{outputs.min().item():.3f},{outputs.max().item():.3f}] "
+                        f"smxΣ={soft.sum(1).mean().item():.3f}")
 
                 outputs = outputs.permute(0, 2, 1)  # (B, 1200, 4)
                 loss = criterion(
